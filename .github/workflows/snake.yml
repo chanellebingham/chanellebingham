@@ -1,0 +1,34 @@
+# Draws the pink snake that eats my contribution graph, twice a day.
+# The pictures go to the "output" branch; the README shows them from there.
+name: Snake
+
+on:
+  schedule:
+    - cron: "0 */12 * * *"   # GitHub turns this off after 60 days with no activity in the repo; turn it back on in the Actions tab
+  workflow_dispatch:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+
+jobs:
+  snake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: Platane/snk/svg-only@v3
+        with:
+          github_user_name: ${{ github.repository_owner }}
+          outputs: |
+            dist/snake-light.svg?color_snake=#e0218a&color_dots=#fbe9f2,#f9c3dd,#f48fc0,#e75fa5,#c9a227
+            dist/snake-dark.svg?palette=github-dark&color_snake=#ff8fcf&color_dots=#2a1726,#5c2a4a,#9c3d78,#e05fa8,#f2c14e
+
+      - uses: crazy-max/ghaction-github-pages@v4
+        with:
+          target_branch: output
+          build_dir: dist
+          jekyll: false
+          commit_message: "Update snake [skip ci]"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
