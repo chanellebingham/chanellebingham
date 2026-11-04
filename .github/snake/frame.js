@@ -1,26 +1,20 @@
-// Frames the snake that Platane/snk draws, so it reads like GitHub's own graph: the month names
-// along the top, Mon / Wed / Fri down the side, and a strip of counts underneath.
-// Runs in the Snake workflow after snk and before the pictures go to the "output" branch.
+// The parts the pictures share: reading my contributions page and the grid Platane/snk draws, the
+// checks that the two line up, the counts, and the labels, fonts and glossy chips. Not run on its
+// own: graph.js (the glossy graph the snake eats) and activity.js use it. Until 5 Nov 2026 it also
+// framed snk's own snake picture; that picture is gone from the profile, and the snake lives in the
+// glossy graph now.
 //
-//   node .github/snake/frame.js <dist dir>      env: GITHUB_USER (default chanellebingham), GITHUB_TOKEN
-//
-// It refuses rather than guess. The months come from the same contributions page the snake is
-// drawn from, and that page has to match the snake's grid cell for cell. If anything doesn't line
-// up, nothing is written and the step fails: the workflow then publishes snk's plain snake (fresh,
-// but without the frame) and goes red, so a broken frame never leaves old counts up for good.
+// It refuses rather than guess. The page has to match snk's grid cell for cell, and every value read
+// is checked against the dates, so a bad read refuses instead of drawing.
 //
 // The page is read with patterns, not an HTML parser: Node has none built in, and a package in a
 // profile workflow is a supply-chain risk for a picture. Each tag's attributes are read in any
-// order, and every value read is checked against the snake's own grid and the dates, so a bad read
-// refuses instead of drawing.
+// order.
 'use strict';
-const fs = require('fs');
-const path = require('path');
 
 const USER = process.env.GITHUB_USER || 'chanellebingham';
 const PITCH = 16;  // snk puts day (col, row) at x = 2 + 16 * col, y = 2 + 16 * row; row 0 is Sunday
 const OFF = 2;
-const MARK = 'data-framed="1"';
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const THEMES = {
@@ -59,9 +53,10 @@ function parsePage(html) {
 
 function parseSnake(svg) {
   const m = svg.match(/^<svg viewBox="(-?[\d.]+) (-?[\d.]+) ([\d.]+) ([\d.]+)" width="([\d.]+)" height="([\d.]+)"/);
-  const cells = [...svg.matchAll(/<rect class="c( c[0-9a-z]+)?" x="(-?\d+)" y="(-?\d+)"/g)]
-    .map(([, cls, x, y]) => ({ lit: Boolean(cls), col: (+x - OFF) / PITCH, row: (+y - OFF) / PITCH }));
-  return { viewBox: m ? m.slice(1, 5).map(Number) : null, cells, framed: svg.includes(MARK) };
+  // A lit square carries its own class (c0, c1, ...), which names its keyframes: when it's eaten.
+  const cells = [...svg.matchAll(/<rect class="c(?: (c[0-9a-z]+))?" x="(-?\d+)" y="(-?\d+)"/g)]
+    .map(([, cls, x, y]) => ({ lit: Boolean(cls), cls, col: (+x - OFF) / PITCH, row: (+y - OFF) / PITCH }));
+  return { viewBox: m ? m.slice(1, 5).map(Number) : null, cells };
 }
 
 // What the page alone has to get right: enough days, a total, months, every day in the square
@@ -101,13 +96,11 @@ function checkPage(page) {
   return p;
 }
 
-// Everything that has to be true before the frame goes on the snake: the page's own checks, plus
-// the snake's grid matching the page's cell for cell. Returns the problems; empty means go.
-function check(page, snake) {
+// snk's grid matching the page's cell for cell (the page's own checks are checkPage's). Returns the
+// problems; empty means the snake can go on the graph.
+function checkGrid(page, snake) {
   const p = [];
   if (!snake.viewBox) p.push('the snake picture does not open with the viewBox and size I expect');
-  if (snake.framed) p.push('this snake picture is already framed');
-  p.push(...checkPage(page));
   const key = (c) => `${c.col},${c.row}`;
   const missing = (a, b) => [...a].filter((k) => !b.has(k));
   const pageAll = new Set(page.cells.map(key));
@@ -155,8 +148,9 @@ function rateLimitWait(r, body = '', now = Date.now()) {
 }
 
 // The time one run may spend WAITING on rate limits, shared by every search. Each request also
-// has its own time limit (REQUEST_S). Neither bounds the run on its own; the workflow's 2-minute
-// step timeout does, and the plain snake still goes up if the frame step runs out of it.
+// has its own time limit (REQUEST_S). Neither bounds the run on its own; the workflow's graph step
+// timeout does. graph.js writes the graph before it asks for the counts, so a step that runs out of
+// time during the searches still leaves a fresh graph (without the chips).
 const newBudget = (seconds = 75) => ({ left: seconds });
 const REQUEST_S = 20;
 const realSleep = (s) => new Promise((ok) => setTimeout(ok, s * 1000));
@@ -214,7 +208,7 @@ const num = (n) => Number(n).toLocaleString('en-US');  // 1,234, the way GitHub 
 const WIDTH = { 0: 0.572, 1: 0.383, 2: 0.577, 3: 0.572, 4: 0.549, 5: 0.501, 6: 0.526, 7: 0.533, 8: 0.547, 9: 0.526, ' ': 0.241, ',': 0.224, I: 0.232, L: 0.565, M: 0.814, a: 0.563, b: 0.563, c: 0.505, d: 0.565, e: 0.537, g: 0.552, h: 0.554, i: 0.242, j: 0.236, l: 0.301, m: 0.803, n: 0.563, o: 0.559, p: 0.552, q: 0.551, r: 0.423, s: 0.458, t: 0.411, u: 0.56, v: 0.564, y: 0.559, '’': 0.199 };
 const measure = (s, px) => [...s].reduce((a, c) => a + (WIDTH[c] ?? 0.8), 0) * px;  // unknown characters count wide
 
-// The labels both pictures share, so the snake's frame and the still graph can't drift apart:
+// The labels for the graph, with or without the snake:
 // months (a label one column from the next is left out, so the two never run into each other)
 // and Mon/Wed/Fri on rows 1, 3 and 5. The caller says where a column and a row sit.
 function labels(page, { monthX, monthY, dayX, dayY }) {
@@ -239,93 +233,51 @@ function chipSizes(n, label, room) {
   return { n: +(20 * k).toFixed(2), t: +(11.5 * k).toFixed(2), dx: +(7 * k).toFixed(2), width: at(k) };
 }
 
-function frame(svg, snake, page, stats, theme, fontB64) {
-  const T = THEMES[theme];
-  const [x0, y0, w, h] = snake.viewBox;
-  const LEFT = 30;   // room for the day names
-  const STRIP = 72;  // room for the counts
-  const nx = x0 - LEFT, nw = w + LEFT, nh = h + STRIP;
-  const open = `<svg viewBox="${nx} ${y0} ${nw} ${nh}" width="${nw}" height="${nh}" ${MARK}`;
+// The two gradients the chips use, for a picture's <defs>.
+const chipDefs = (T) => `<linearGradient id="chip" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${T.chipTop}"/><stop offset="1" stop-color="${T.chipBottom}"/></linearGradient>`
+  + `<linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="${T.gloss}"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient>`;
 
-  // snk keeps a one-cell lane round the grid for the snake (x from -16, y from -16). The names sit
-  // outside it: months above, days to the left.
-  const names = labels(page, { monthX: (col) => OFF + col * PITCH, monthY: -20, dayX: x0 - 4, dayY: (r) => OFF + r * PITCH + 10 });
+const CHIP_H = 46;
 
-  // Three glossy chips under the bar, as wide as the grid between them.
-  const cols = Math.max(...page.cells.map((c) => c.col)) + 1;
-  const gridW = (cols - 1) * PITCH + 12;
-  const gap = 18, cw = (gridW - 2 * gap) / 3, ch = 46, cy = y0 + h + 14;
-  const chips = [
+// Three glossy chips in a row, `width` wide between them, the first at (x, y): the year's
+// contributions, the projects I've sent pull requests to, and how many were merged. Needs chipDefs()
+// and the .n/.t styles in the picture.
+function chipRow(stats, T, { x, y, width }) {
+  const gap = 18, cw = (width - 2 * gap) / 3, ch = CHIP_H;
+  return [
     [stats.total, 'contributions in the last year'],
     [stats.prRepos, 'projects I’ve sent pull requests to'],
     [stats.merged, 'pull requests merged'],
   ].map(([n, label], i) => {
-    const x = OFF + i * (cw + gap);
+    const cx = x + i * (cw + gap);
     const s = chipSizes(num(n), label, cw - ch);  // half a chip-height of room at each rounded end
-    return `<g transform="translate(${x.toFixed(1)} ${cy})">`
+    return `<g transform="translate(${cx.toFixed(1)} ${y})">`
       + `<rect width="${cw.toFixed(1)}" height="${ch}" rx="${ch / 2}" fill="url(#chip)" stroke="${T.edge}" stroke-width="1.5"/>`
       + `<rect x="10" y="3" width="${(cw - 20).toFixed(1)}" height="${ch / 2 - 3}" rx="${ch / 4}" fill="url(#gloss)"/>`
       + `<text x="${(cw / 2).toFixed(1)}" y="30" text-anchor="middle"><tspan class="n" style="font-size:${s.n}px">${num(n)}</tspan><tspan class="t" style="font-size:${s.t}px" dx="${s.dx}">${esc(label)}</tspan></text>`
       + '</g>';
   }).join('');
-
-  const extra = `<defs>${styles(T, fontB64, { n: 20, t: 11.5 })}`
-    + `<linearGradient id="chip" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${T.chipTop}"/><stop offset="1" stop-color="${T.chipBottom}"/></linearGradient>`
-    + `<linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="${T.gloss}"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient></defs>`
-    + `<g>${names}</g><g>${chips}</g>`;
-
-  // Replacer functions, so a "$" anywhere in the inserted text is never read as a pattern.
-  return svg
-    .replace(/^<svg viewBox="[^"]*" width="[^"]*" height="[^"]*"/, () => open)
-    .replace(/<\/svg>\s*$/, () => `${extra}</svg>`);
 }
 
-// ---------- run ----------
+// ---------- reading the page, and the counts ----------
 async function readPage() {
   const r = await get(`https://github.com/users/${USER}/contributions`, { 'User-Agent': `${USER}-profile-snake` });
   if (!r.ok) throw new Error(`the contributions page answered ${r.status}`);
   return parsePage(await r.text());
 }
 
-async function main() {
-  const dist = process.argv[2];
-  if (!dist) throw new Error('usage: node frame.js <dist dir>');
-  const token = process.env.GITHUB_TOKEN;
-  // The page first, so snk's read and this one are as close together as they can be. The two
-  // searches one after the other, to stay clear of GitHub's limit on bursts.
-  const page = await readPage();
-  // One read of the page for both pictures: when both are drawn, the graph's total and the snake's
-  // chip come from the same read. (If the frame then refuses or runs out of time, the snake goes up
-  // plain, with no total to disagree with; the graph still runs its own checks on this read.) The cache lives outside dist
-  // (the workflow points it at the runner's temp folder), so it's never published.
-  if (process.env.PAGE_CACHE) fs.writeFileSync(process.env.PAGE_CACHE, JSON.stringify(page));
+// The three counts for the chips, over the same year as the graph, from its first day. The two
+// searches one after the other, to stay clear of GitHub's limit on bursts.
+async function readStats(page, token, opts = { budget: newBudget() }) {
   if (!page.cells.length) throw new Error('no days on the contributions page');
   const since = page.cells.reduce((a, c) => (c.date < a ? c.date : a), page.cells[0].date);
   const q = queries(since);
-  const opts = { budget: newBudget() };
   const prs = await projects(q.prs, token, opts);
   const merged = await count(q.merged, token, opts);
-  const stats = { total: page.total, prRepos: prs.repos, merged };
-  const font = fs.readFileSync(path.join(__dirname, 'fredoka-latin.woff2')).toString('base64');
-
-  const files = ['light', 'dark'].map((theme) => ({ theme, file: path.join(dist, `snake-${theme}.svg`) }));
-  const out = [];
-  for (const { theme, file } of files) {
-    const svg = fs.readFileSync(file, 'utf8');
-    const snake = parseSnake(svg);
-    const problems = check(page, snake);
-    if (problems.length) throw new Error(`snake-${theme}.svg not framed:\n  - ${problems.join('\n  - ')}`);
-    out.push([file, frame(svg, snake, page, stats, theme, font)]);
-  }
-  for (const [file, svg] of out) fs.writeFileSync(file, svg);  // only once both have passed
-  console.log(`framed, since ${since}: ${stats.total} contributions, ${prs.total} pull requests to ${stats.prRepos} projects, ${stats.merged} merged`);
+  return { total: page.total, prRepos: prs.repos, merged, prs: prs.total, since };
 }
 
 // GitHub's annotation format wants %, CR and LF escaped, in that order.
 const annotate = (s) => String(s).replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
 
-if (require.main === module) {
-  main().catch((e) => { console.error(`::error::${annotate(e.message)}`); process.exit(1); });
-}
-
-module.exports = { parsePage, parseSnake, check, checkPage, frame, annotate, chipSizes, rateLimitWait, searchPage, queries, newBudget, readPage, get, esc, num, measure, labels, styles, THEMES, USER, MON, PITCH };
+module.exports = { parsePage, parseSnake, checkPage, checkGrid, chipRow, chipDefs, CHIP_H, annotate, chipSizes, rateLimitWait, searchPage, queries, newBudget, readPage, readStats, get, esc, num, measure, labels, styles, THEMES, USER, MON, PITCH };

@@ -305,7 +305,8 @@ async function keepLastGood(dist, last, { onlyMissing = false, names = FILES } =
 // ---------- the run ----------
 
 // My contributions page, or one organisation's view of it (what clicking that organisation on my
-// profile shows). frame.js caches the parsed page, not its HTML, so this reads it again.
+// profile shows). graph.js reads the page in its own step and keeps only the parsed days, so this
+// reads it again.
 async function readPageHtml(org) {
   const r = await get(`https://github.com/users/${USER}/contributions${org ? `?org=${encodeURIComponent(org)}` : ''}`, { 'User-Agent': `${USER}-profile-snake` });
   if (!r.ok) throw new Error(`the contributions page${org ? ` for ${org}` : ''} answered ${r.status}`);

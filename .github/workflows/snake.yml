@@ -1,11 +1,11 @@
-# Draws the pink snake that eats my contribution graph, twice a day.
+# Draws my glossy contribution graph with the pink snake eating it, twice a day.
 # The pictures go to the "output" branch; the README shows them from there.
 name: Snake
 
 on:
   schedule:
     # 17 past, so a scheduled run doesn't start on a day boundary (00:00 UTC, or my own midnight at 13:00 or 14:00 UTC).
-    # A push or a manual run can start at any minute; if one lands on a boundary, the frame refuses and the plain snake goes up.
+    # A push or a manual run can start at any minute; if one lands on a boundary, snk's grid and the page can be a day apart: the snake is left out of that run's graph (the still graph goes up) and the run goes red.
     - cron: "17 */12 * * *"   # GitHub turns this off after 60 days with no activity in the repo; turn it back on in the Actions tab
   workflow_dispatch:
   push:
@@ -24,7 +24,7 @@ concurrency:
 jobs:
   snake:
     runs-on: ubuntu-latest
-    timeout-minutes: 17   # the step limits below add up to 15 (last 1, snk 4, frame 2, graph 2, put-back 1, activity 4, put-back 1); the rest is the first checkout and the deploy
+    timeout-minutes: 17   # the step limits below add up to 15 (last 1, snk 4, graph 4, put-back 1, activity 4, put-back 1); the rest is the first checkout and the deploy
     steps:
       - uses: actions/checkout@v7
 
@@ -37,45 +37,43 @@ jobs:
           ref: output
           path: last
 
-      - uses: Platane/snk/svg-only@v3
+      # snk works out the snake's path and when it eats each square. Its pictures go to snk/, not dist,
+      # so they're never published: graph.js reads the timing and the moves out of them, and its own
+      # tiles and glossy snake are what show. graph.js reads snk's picture closely, so snk is pinned
+      # to one release (v3.5.0): a newer one only comes in when someone moves the pin and checks it.
+      # If snk fails, the graph still goes up without the snake and the run goes red.
+      - id: snk
+        uses: Platane/snk/svg-only@d8f6715049803e982ee5ff501b6b9b7d5deeb09b   # v3.5.0
+        continue-on-error: true
         timeout-minutes: 4
         with:
           github_user_name: ${{ github.repository_owner }}
           outputs: |
-            dist/snake-light.svg?color_snake=#e0218a&color_dots=#fbe9f2,#f9c3dd,#f48fc0,#e75fa5,#c9a227
-            dist/snake-dark.svg?palette=github-dark&color_snake=#ff8fcf&color_dots=#2a1726,#5c2a4a,#9c3d78,#e05fa8,#f2c14e
+            snk/snake-light.svg?color_snake=#e0218a&color_dots=#fbe9f2,#f9c3dd,#f48fc0,#e75fa5,#c9a227
+            snk/snake-dark.svg?palette=github-dark&color_snake=#ff8fcf&color_dots=#2a1726,#5c2a4a,#9c3d78,#e05fa8,#f2c14e
 
       - uses: actions/setup-node@v7
         with:
           node-version: 24
 
-      # Months along the top, Mon/Wed/Fri down the side, and my counts underneath. If the
-      # contributions page and the snake's grid don't line up, it changes nothing: the plain
-      # snake still goes up below, and the last step turns the run red so someone looks.
-      - id: frame
+      # My contribution graph in glossy pink and gold tiles, the snake eating it on snk's clock, and my
+      # three counts underneath, in one box. If the snake or the counts can't be had, the graph still
+      # goes up fresh without them and the run goes red. If the graph itself can't be drawn, the last
+      # good one is put back from last/ so the README never shows a gap.
+      - id: graph
         continue-on-error: true
-        timeout-minutes: 2   # ends well inside the job's 17, so the deploy step is reached
-        run: node .github/snake/frame.js dist
+        timeout-minutes: 4   # the page (20 s) and the graph come first and go into dist; the counts' searches come after, and at worst (retries and rate-limit waits) can run past this, which leaves the fresh graph without its chips
+        run: node .github/snake/graph.js dist last
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_USER: ${{ github.repository_owner }}
-          PAGE_CACHE: ${{ runner.temp }}/contributions.json   # one read of the page for both pictures
-
-      # My contribution graph as a still picture in glossy pink and gold tiles. If anything goes wrong,
-      # the last good graph is put back from last/ so the README never shows a gap.
-      - id: graph
-        continue-on-error: true
-        timeout-minutes: 2   # one page read and, at worst, two fallback fetches, at 20 s each
-        run: node .github/snake/graph.js dist last
-        env:
-          GITHUB_USER: ${{ github.repository_owner }}
-          PAGE_CACHE: ${{ runner.temp }}/contributions.json
+          SNK_DIR: snk
           LAST_OK: ${{ steps.last.outcome == 'success' }}
 
       # If the graph step didn't finish (killed by its time limit, say), its own put-back never ran.
       # This puts back any graph missing from dist, through the same checked path (never a blind copy).
       - if: steps.graph.outcome != 'success'
-        continue-on-error: true   # never holds up the deploy: the snake goes up whatever happens here
+        continue-on-error: true   # never holds up the deploy: the other pictures go up whatever happens here
         timeout-minutes: 1
         run: node .github/snake/graph.js --keep dist last
         env:
@@ -110,7 +108,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - if: steps.frame.outcome != 'success' || steps.graph.outcome != 'success' || steps.activity.outcome != 'success'   # failed, timed out or cancelled: say so
+      - if: steps.snk.outcome != 'success' || steps.graph.outcome != 'success' || steps.activity.outcome != 'success'   # failed, timed out or cancelled: say so
         run: |
-          echo "::error::The snake, the graph or the activity pictures didn't come out right (frame: ${{ steps.frame.outcome }}, graph: ${{ steps.graph.outcome }}, activity: ${{ steps.activity.outcome }}); see those steps above for why."
+          echo "::error::The snake, the graph (with its counts) or the activity pictures didn't come out right (snk: ${{ steps.snk.outcome }}, graph: ${{ steps.graph.outcome }}, activity: ${{ steps.activity.outcome }}); see those steps above for why."
           exit 1

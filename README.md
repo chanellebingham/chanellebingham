@@ -48,14 +48,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/graph-dark.svg">
-    <img alt="My contribution graph for the last year in glossy pink and gold tiles, the busiest days in gold, with the months along the top, Mon, Wed and Fri down the side, and how many contributions I made in the year." src="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/graph-light.svg">
-  </picture>
-</p>
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/snake-dark.svg">
-    <img alt="A pink snake eating my contribution graph for the last year, with the months along the top and Mon, Wed and Fri down the side. Underneath, all for the last year: how many contributions I made, how many projects I’ve sent pull requests to, and how many of my pull requests were merged." src="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/snake-light.svg">
+    <img alt="My contribution graph for the last year in glossy pink and gold tiles, the busiest days in gold, with the months along the top and Mon, Wed and Fri down the side. A glossy pink snake with thin gold scales eats the squares one by one, and they all come back when it starts again. Underneath, all for the last year: how many contributions I made, how many projects I’ve sent pull requests to, and how many of my pull requests were merged." src="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/graph-light.svg">
   </picture>
 </p>
 
