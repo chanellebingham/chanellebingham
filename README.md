@@ -46,6 +46,6 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/snake-dark.svg">
-    <img alt="A pink snake eating my contribution graph" src="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/snake-light.svg">
+    <img alt="A pink snake eating my contribution graph for the last year, with the months along the top and Mon, Wed and Fri down the side. Underneath, all for the last year: how many contributions I made, how many projects I’ve sent pull requests to, and how many of my pull requests were merged." src="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/snake-light.svg">
   </picture>
 </p>

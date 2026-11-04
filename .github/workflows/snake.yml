@@ -4,7 +4,9 @@ name: Snake
 
 on:
   schedule:
-    - cron: "0 */12 * * *"   # GitHub turns this off after 60 days with no activity in the repo; turn it back on in the Actions tab
+    # 17 past, so a scheduled run doesn't start on a day boundary (00:00 UTC, or my own midnight at 13:00 or 14:00 UTC).
+    # A push or a manual run can start at any minute; if one lands on a boundary, the frame refuses and the plain snake goes up.
+    - cron: "17 */12 * * *"   # GitHub turns this off after 60 days with no activity in the repo; turn it back on in the Actions tab
   workflow_dispatch:
   push:
     branches: [master]
@@ -17,12 +19,29 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - uses: actions/checkout@v7
+
       - uses: Platane/snk/svg-only@v3
         with:
           github_user_name: ${{ github.repository_owner }}
           outputs: |
             dist/snake-light.svg?color_snake=#e0218a&color_dots=#fbe9f2,#f9c3dd,#f48fc0,#e75fa5,#c9a227
             dist/snake-dark.svg?palette=github-dark&color_snake=#ff8fcf&color_dots=#2a1726,#5c2a4a,#9c3d78,#e05fa8,#f2c14e
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      # Months along the top, Mon/Wed/Fri down the side, and my counts underneath. If the
+      # contributions page and the snake's grid don't line up, it changes nothing: the plain
+      # snake still goes up below, and the last step turns the run red so someone looks.
+      - id: frame
+        continue-on-error: true
+        timeout-minutes: 2   # ends the frame step well inside the job's 5 minutes, so the plain snake can still go up
+        run: node .github/snake/frame.js dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USER: ${{ github.repository_owner }}
 
       - uses: crazy-max/ghaction-github-pages@v4
         with:
@@ -32,3 +51,8 @@ jobs:
           commit_message: "Update snake [skip ci]"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - if: steps.frame.outcome != 'success'   # failed, timed out or cancelled: say so
+        run: |
+          echo "::error::The snake went up without its months and counts; see the frame step above for why."
+          exit 1
