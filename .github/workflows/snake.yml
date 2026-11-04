@@ -17,11 +17,21 @@ permissions:
 jobs:
   snake:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 12   # the step limits below add up to 10 (last 1, snk 4, frame 2, graph 2, put-back 1); the rest is the first checkout and the deploy
     steps:
       - uses: actions/checkout@v7
 
+      # The pictures that are up right now, so a graph that can't be drawn is put back, not lost.
+      - id: last
+        uses: actions/checkout@v7
+        continue-on-error: true
+        timeout-minutes: 1
+        with:
+          ref: output
+          path: last
+
       - uses: Platane/snk/svg-only@v3
+        timeout-minutes: 4
         with:
           github_user_name: ${{ github.repository_owner }}
           outputs: |
@@ -37,11 +47,33 @@ jobs:
       # snake still goes up below, and the last step turns the run red so someone looks.
       - id: frame
         continue-on-error: true
-        timeout-minutes: 2   # ends the frame step well inside the job's 5 minutes, so the plain snake can still go up
+        timeout-minutes: 2   # ends well inside the job's 12, so the deploy step is reached
         run: node .github/snake/frame.js dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_USER: ${{ github.repository_owner }}
+          PAGE_CACHE: ${{ runner.temp }}/contributions.json   # one read of the page for both pictures
+
+      # My contribution graph as a still picture in glossy pink and gold tiles. If anything goes wrong,
+      # the last good graph is put back from last/ so the README never shows a gap.
+      - id: graph
+        continue-on-error: true
+        timeout-minutes: 2   # one page read and, at worst, two fallback fetches, at 20 s each
+        run: node .github/snake/graph.js dist last
+        env:
+          GITHUB_USER: ${{ github.repository_owner }}
+          PAGE_CACHE: ${{ runner.temp }}/contributions.json
+          LAST_OK: ${{ steps.last.outcome == 'success' }}
+
+      # If the graph step didn't finish (killed by its time limit, say), its own put-back never ran.
+      # This puts back any graph missing from dist, through the same checked path (never a blind copy).
+      - if: steps.graph.outcome != 'success'
+        continue-on-error: true   # never holds up the deploy: the snake goes up whatever happens here
+        timeout-minutes: 1
+        run: node .github/snake/graph.js --keep dist last
+        env:
+          GITHUB_USER: ${{ github.repository_owner }}
+          LAST_OK: ${{ steps.last.outcome == 'success' }}
 
       - uses: crazy-max/ghaction-github-pages@v4
         with:
@@ -52,7 +84,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - if: steps.frame.outcome != 'success'   # failed, timed out or cancelled: say so
+      - if: steps.frame.outcome != 'success' || steps.graph.outcome != 'success'   # failed, timed out or cancelled: say so
         run: |
-          echo "::error::The snake went up without its months and counts; see the frame step above for why."
+          echo "::error::The snake or the graph didn't come out right (frame: ${{ steps.frame.outcome }}, graph: ${{ steps.graph.outcome }}); see those steps above for why."
           exit 1

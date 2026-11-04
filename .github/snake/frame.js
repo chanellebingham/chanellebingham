@@ -64,14 +64,50 @@ function parseSnake(svg) {
   return { viewBox: m ? m.slice(1, 5).map(Number) : null, cells, framed: svg.includes(MARK) };
 }
 
-// Everything that has to be true before a label goes on. Returns the problems; empty means go.
+// What the page alone has to get right: enough days, a total, months, every day in the square
+// its date says (week = column, Sunday = row 0), and each month label on its month's first week.
+function checkPage(page) {
+  const p = [];
+  if (page.cells.length < 300) p.push(`only ${page.cells.length} days on the contributions page`);
+  if (page.total == null) p.push('no "contributions in the last year" total on the page');
+  if (!page.months.length) p.push('no month labels on the page');
+  const bad = page.cells.filter((c) => Number.isNaN(Date.parse(c.date)));
+  if (bad.length) p.push(`days with a date that isn't a date: ${bad.slice(0, 3).map((c) => c.date).join(' ')}`);
+  else if (page.cells.length) {
+    const c0 = page.cells.reduce((a, c) => (c.col < a.col || (c.col === a.col && c.row < a.row) ? c : a));
+    const sunday0 = Date.parse(c0.date) - (c0.col * 7 + c0.row) * 864e5;
+    if (new Date(sunday0).getUTCDay() !== 0) p.push(`row 0 isn't Sunday (the first week starts on ${new Date(sunday0).toISOString().slice(0, 10)})`);
+    const wrong = page.cells.filter((c) => c.row > 6 || new Date(sunday0 + (c.col * 7 + c.row) * 864e5).toISOString().slice(0, 10) !== c.date);
+    if (wrong.length) p.push(`days in the wrong square: ${wrong.slice(0, 3).map((c) => `${c.date}@${c.col},${c.row}`).join(' ')}`);
+    const seen = new Set(page.cells.map((c) => `${c.col},${c.row}`));
+    if (seen.size !== page.cells.length) p.push('two days in the same square');
+    // Every day from the first to the last, none missing: a partial read would be drawn with holes.
+    const dates = page.cells.map((c) => c.date).sort();
+    const span = Math.round((Date.parse(dates[dates.length - 1]) - Date.parse(dates[0])) / 864e5) + 1;
+    if (span !== new Set(dates).size) p.push(`days missing: ${new Set(dates).size} days found between ${dates[0]} and ${dates[dates.length - 1]}, which span ${span}`);
+    const odd = page.cells.filter((c) => !(c.lvl >= 0 && c.lvl <= 4));   // GitHub's five levels, 0 to 4
+    if (odd.length) p.push(`days with a level outside 0-4: ${odd.slice(0, 3).map((c) => `${c.date}=${c.lvl}`).join(' ')}`);
+  }
+  // Each month label must sit on the FIRST week that starts in that month. (Only "a week in that
+  // month" let a label shifted by one week through, since most months span four or five.)
+  const firstOf = new Map();
+  for (const c of page.cells) if (!firstOf.has(c.col) || c.row < firstOf.get(c.col).row) firstOf.set(c.col, c);
+  const monthOf = (col) => (firstOf.has(col) ? MON[+firstOf.get(col).date.slice(5, 7) - 1] : 'nothing');
+  for (const m of page.months) {
+    const got = monthOf(m.col);
+    if (got !== m.name) p.push(`month label ${m.name} sits on column ${m.col}, which starts in ${got}`);
+    else if (m.col > 0 && monthOf(m.col - 1) === m.name) p.push(`month label ${m.name} sits on column ${m.col}, but ${m.name} starts a column earlier`);
+  }
+  return p;
+}
+
+// Everything that has to be true before the frame goes on the snake: the page's own checks, plus
+// the snake's grid matching the page's cell for cell. Returns the problems; empty means go.
 function check(page, snake) {
   const p = [];
   if (!snake.viewBox) p.push('the snake picture does not open with the viewBox and size I expect');
   if (snake.framed) p.push('this snake picture is already framed');
-  if (page.cells.length < 300) p.push(`only ${page.cells.length} days on the contributions page`);
-  if (page.total == null) p.push('no "contributions in the last year" total on the page');
-  if (!page.months.length) p.push('no month labels on the page');
+  p.push(...checkPage(page));
   const key = (c) => `${c.col},${c.row}`;
   const missing = (a, b) => [...a].filter((k) => !b.has(k));
   const pageAll = new Set(page.cells.map(key));
@@ -92,16 +128,6 @@ function check(page, snake) {
     ['active days in the snake but empty on the page', old(missing(snakeLit, pageLit))],
   ];
   for (const [what, list] of sets) if (list.length) p.push(`${what}: ${list.slice(0, 5).join(' ')}`);
-  // Each month label must sit on the FIRST week that starts in that month. (Only "a week in that
-  // month" let a label shifted by one week through, since most months span four or five.)
-  const firstOf = new Map();
-  for (const c of page.cells) if (!firstOf.has(c.col) || c.row < firstOf.get(c.col).row) firstOf.set(c.col, c);
-  const monthOf = (col) => (firstOf.has(col) ? MON[+firstOf.get(col).date.slice(5, 7) - 1] : 'nothing');
-  for (const m of page.months) {
-    const got = monthOf(m.col);
-    if (got !== m.name) p.push(`month label ${m.name} sits on column ${m.col}, which starts in ${got}`);
-    else if (m.col > 0 && monthOf(m.col - 1) === m.name) p.push(`month label ${m.name} sits on column ${m.col}, but ${m.name} starts a column earlier`);
-  }
   return p;
 }
 
@@ -185,8 +211,26 @@ const num = (n) => Number(n).toLocaleString('en-US');  // 1,234, the way GitHub 
 
 // Advance widths (em) of the characters the chips use, read from the shipped fredoka-latin.woff2
 // (its hmtx table over unitsPerEm), so a chip's text can be measured before it's drawn.
-const WIDTH = { 0: 0.572, 1: 0.383, 2: 0.577, 3: 0.572, 4: 0.549, 5: 0.501, 6: 0.526, 7: 0.533, 8: 0.547, 9: 0.526, ' ': 0.241, ',': 0.224, I: 0.232, a: 0.563, b: 0.563, c: 0.505, d: 0.565, e: 0.537, g: 0.552, h: 0.554, i: 0.242, j: 0.236, l: 0.301, m: 0.803, n: 0.563, o: 0.559, p: 0.552, q: 0.551, r: 0.423, s: 0.458, t: 0.411, u: 0.56, v: 0.564, y: 0.559, '’': 0.199 };
+const WIDTH = { 0: 0.572, 1: 0.383, 2: 0.577, 3: 0.572, 4: 0.549, 5: 0.501, 6: 0.526, 7: 0.533, 8: 0.547, 9: 0.526, ' ': 0.241, ',': 0.224, I: 0.232, L: 0.565, M: 0.814, a: 0.563, b: 0.563, c: 0.505, d: 0.565, e: 0.537, g: 0.552, h: 0.554, i: 0.242, j: 0.236, l: 0.301, m: 0.803, n: 0.563, o: 0.559, p: 0.552, q: 0.551, r: 0.423, s: 0.458, t: 0.411, u: 0.56, v: 0.564, y: 0.559, '’': 0.199 };
 const measure = (s, px) => [...s].reduce((a, c) => a + (WIDTH[c] ?? 0.8), 0) * px;  // unknown characters count wide
+
+// The labels both pictures share, so the snake's frame and the still graph can't drift apart:
+// months (a label one column from the next is left out, so the two never run into each other)
+// and Mon/Wed/Fri on rows 1, 3 and 5. The caller says where a column and a row sit.
+function labels(page, { monthX, monthY, dayX, dayY }) {
+  const months = page.months
+    .filter((m, i, a) => !a[i + 1] || a[i + 1].col - m.col >= 2)
+    .map((m) => `<text class="lb" x="${monthX(m.col)}" y="${monthY}">${esc(m.name)}</text>`).join('');
+  const days = [[1, 'Mon'], [3, 'Wed'], [5, 'Fri']]
+    .map(([r, d]) => `<text class="lb" x="${dayX}" y="${dayY(r)}" text-anchor="end">${d}</text>`).join('');
+  return months + days;
+}
+
+// The embedded Fredoka and the three text styles both pictures use; only the two big sizes differ.
+const styles = (T, fontB64, { n, t }) => `<style>@font-face{font-family:'Fred';src:url(data:font/woff2;base64,${fontB64}) format('woff2');font-weight:600}`
+  + `.lb{font:600 10px 'Fred',-apple-system,'Segoe UI',sans-serif;fill:${T.label}}`
+  + `.n{font:600 ${n}px 'Fred',-apple-system,'Segoe UI',sans-serif;fill:${T.num}}`
+  + `.t{font:600 ${t}px 'Fred',-apple-system,'Segoe UI',sans-serif;fill:${T.text}}</style>`;
 
 // Font sizes for one chip: the usual 20 / 11.5 px, shrunk together if the line wouldn't fit.
 function chipSizes(n, label, room) {
@@ -204,13 +248,8 @@ function frame(svg, snake, page, stats, theme, fontB64) {
   const open = `<svg viewBox="${nx} ${y0} ${nw} ${nh}" width="${nw}" height="${nh}" ${MARK}`;
 
   // snk keeps a one-cell lane round the grid for the snake (x from -16, y from -16). The names sit
-  // outside it: months above, days to the left. A month label that would sit one column from the
-  // next one is left out, so the two never run into each other.
-  const months = page.months
-    .filter((m, i, a) => !a[i + 1] || a[i + 1].col - m.col >= 2)
-    .map((m) => `<text class="lb" x="${OFF + m.col * PITCH}" y="-20">${esc(m.name)}</text>`).join('');
-  const days = [[1, 'Mon'], [3, 'Wed'], [5, 'Fri']]
-    .map(([r, d]) => `<text class="lb" x="${x0 - 4}" y="${OFF + r * PITCH + 10}" text-anchor="end">${d}</text>`).join('');
+  // outside it: months above, days to the left.
+  const names = labels(page, { monthX: (col) => OFF + col * PITCH, monthY: -20, dayX: x0 - 4, dayY: (r) => OFF + r * PITCH + 10 });
 
   // Three glossy chips under the bar, as wide as the grid between them.
   const cols = Math.max(...page.cells.map((c) => c.col)) + 1;
@@ -230,13 +269,10 @@ function frame(svg, snake, page, stats, theme, fontB64) {
       + '</g>';
   }).join('');
 
-  const extra = `<defs><style>@font-face{font-family:'Fred';src:url(data:font/woff2;base64,${fontB64}) format('woff2');font-weight:600}`
-    + `.lb{font:600 10px 'Fred',-apple-system,'Segoe UI',sans-serif;fill:${T.label}}`
-    + `.n{font:600 20px 'Fred',-apple-system,'Segoe UI',sans-serif;fill:${T.num}}`
-    + `.t{font:600 11.5px 'Fred',-apple-system,'Segoe UI',sans-serif;fill:${T.text}}</style>`
+  const extra = `<defs>${styles(T, fontB64, { n: 20, t: 11.5 })}`
     + `<linearGradient id="chip" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${T.chipTop}"/><stop offset="1" stop-color="${T.chipBottom}"/></linearGradient>`
     + `<linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="${T.gloss}"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient></defs>`
-    + `<g>${months}${days}</g><g>${chips}</g>`;
+    + `<g>${names}</g><g>${chips}</g>`;
 
   // Replacer functions, so a "$" anywhere in the inserted text is never read as a pattern.
   return svg
@@ -258,6 +294,11 @@ async function main() {
   // The page first, so snk's read and this one are as close together as they can be. The two
   // searches one after the other, to stay clear of GitHub's limit on bursts.
   const page = await readPage();
+  // One read of the page for both pictures: when both are drawn, the graph's total and the snake's
+  // chip come from the same read. (If the frame then refuses or runs out of time, the snake goes up
+  // plain, with no total to disagree with; the graph still runs its own checks on this read.) The cache lives outside dist
+  // (the workflow points it at the runner's temp folder), so it's never published.
+  if (process.env.PAGE_CACHE) fs.writeFileSync(process.env.PAGE_CACHE, JSON.stringify(page));
   if (!page.cells.length) throw new Error('no days on the contributions page');
   const since = page.cells.reduce((a, c) => (c.date < a ? c.date : a), page.cells[0].date);
   const q = queries(since);
@@ -287,4 +328,4 @@ if (require.main === module) {
   main().catch((e) => { console.error(`::error::${annotate(e.message)}`); process.exit(1); });
 }
 
-module.exports = { parsePage, parseSnake, check, frame, annotate, chipSizes, rateLimitWait, searchPage, queries, newBudget, THEMES };
+module.exports = { parsePage, parseSnake, check, checkPage, frame, annotate, chipSizes, rateLimitWait, searchPage, queries, newBudget, readPage, get, esc, num, measure, labels, styles, THEMES, USER, MON, PITCH };

@@ -43,6 +43,15 @@
 
 <p align="center"><img src="assets/divider.svg" width="80%" alt=""></p>
 
+<h3 align="center"><img src="assets/sections/title-contributions.svg" width="32%" alt="My contributions"></h3>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/graph-dark.svg">
+    <img alt="My contribution graph for the last year in glossy pink and gold tiles, the busiest days in gold, with the months along the top, Mon, Wed and Fri down the side, and how many contributions I made in the year." src="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/graph-light.svg">
+  </picture>
+</p>
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/snake-dark.svg">
