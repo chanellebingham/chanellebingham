@@ -58,3 +58,21 @@
     <img alt="A pink snake eating my contribution graph for the last year, with the months along the top and Mon, Wed and Fri down the side. Underneath, all for the last year: how many contributions I made, how many projects I’ve sent pull requests to, and how many of my pull requests were merged." src="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/snake-light.svg">
   </picture>
 </p>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/activity-dark.svg">
+    <img alt="What I do on GitHub, my last year the way GitHub counts it: a sparkly cross with code review, issues, pull requests and commits on its arms, each with its share, and the same shares as bars beside it." src="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/activity-light.svg">
+  </picture>
+</p>
+
+<p align="center">
+  <a href="https://github.com/search?q=author%3Achanellebingham+org%3AWesternFriend+is%3Apr&type=pullrequests"><img src="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/orgs/WesternFriend.svg" width="200" alt="Western Friend: how many pull requests I’ve sent there, how many were merged, and my commits, in the last year"></a>
+  <a href="https://github.com/search?q=author%3Achanellebingham+org%3Agohugoio+is%3Apr&type=pullrequests"><img src="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/orgs/gohugoio.svg" width="200" alt="Hugo: how many pull requests I’ve sent there, how many were merged, and my commits, in the last year"></a>
+  <a href="https://github.com/search?q=author%3Achanellebingham+org%3Ajupyterlab+is%3Apr&type=pullrequests"><img src="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/orgs/jupyterlab.svg" width="200" alt="JupyterLab: how many pull requests I’ve sent there, how many were merged, and my commits, in the last year"></a>
+  <a href="https://github.com/search?q=author%3Achanellebingham+org%3Aquarto-dev+is%3Apr&type=pullrequests"><img src="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/orgs/quarto-dev.svg" width="200" alt="Quarto: how many pull requests I’ve sent there, how many were merged, and my commits, in the last year"></a>
+  <a href="https://github.com/search?q=author%3Achanellebingham+org%3Amui+is%3Apr&type=pullrequests"><img src="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/orgs/mui.svg" width="200" alt="MUI: how many pull requests I’ve sent there, how many were merged, and my commits, in the last year"></a>
+  <a href="https://github.com/search?q=author%3Achanellebingham+org%3Ahome-assistant+is%3Apr&type=pullrequests"><img src="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/orgs/home-assistant.svg" width="200" alt="Home Assistant: how many pull requests I’ve sent there, how many were merged, and my commits, in the last year"></a>
+  <a href="https://github.com/search?q=author%3Achanellebingham+org%3Amozilla+org%3Amozmeao+is%3Apr&type=pullrequests"><img src="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/orgs/mozilla.svg" width="200" alt="Mozilla: how many pull requests I’ve sent there, how many were merged, and my commits, in the last year"></a>
+  <a href="https://github.com/search?q=author%3Achanellebingham+org%3Areadthedocs+is%3Apr&type=pullrequests"><img src="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/orgs/readthedocs.svg" width="200" alt="Read the Docs: how many pull requests I’ve sent there, how many were merged, and my commits, in the last year"></a>
+</p>
