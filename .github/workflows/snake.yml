@@ -14,10 +14,17 @@ on:
 permissions:
   contents: write
 
+# One run at a time: the deploy replaces the whole output branch with that run's pictures, so two
+# runs racing could take away pictures the README shows. (GitHub keeps one run going and at most
+# one waiting; a newer push replaces the waiting one, which shows as cancelled.)
+concurrency:
+  group: snake
+  cancel-in-progress: false
+
 jobs:
   snake:
     runs-on: ubuntu-latest
-    timeout-minutes: 12   # the step limits below add up to 10 (last 1, snk 4, frame 2, graph 2, put-back 1); the rest is the first checkout and the deploy
+    timeout-minutes: 17   # the step limits below add up to 15 (last 1, snk 4, frame 2, graph 2, put-back 1, activity 4, put-back 1); the rest is the first checkout and the deploy
     steps:
       - uses: actions/checkout@v7
 
@@ -47,7 +54,7 @@ jobs:
       # snake still goes up below, and the last step turns the run red so someone looks.
       - id: frame
         continue-on-error: true
-        timeout-minutes: 2   # ends well inside the job's 12, so the deploy step is reached
+        timeout-minutes: 2   # ends well inside the job's 17, so the deploy step is reached
         run: node .github/snake/frame.js dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -75,6 +82,25 @@ jobs:
           GITHUB_USER: ${{ github.repository_owner }}
           LAST_OK: ${{ steps.last.outcome == 'success' }}
 
+      # What I do on GitHub: the cross from my profile, made sparkly, and one card per organisation.
+      # Like the graph, anything that goes wrong puts the last good pictures back.
+      - id: activity
+        continue-on-error: true
+        timeout-minutes: 4   # worst case about 3 minutes: 4 pairs of organisation pages, each 20 s, a 3 s wait and a 20 s retry, then the put-back's fetches at once (20 s)
+        run: node .github/snake/activity.js dist last
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USER: ${{ github.repository_owner }}
+          LAST_OK: ${{ steps.last.outcome == 'success' }}
+
+      - if: steps.activity.outcome != 'success'
+        continue-on-error: true   # never holds up the deploy
+        timeout-minutes: 1
+        run: node .github/snake/activity.js --keep dist last
+        env:
+          GITHUB_USER: ${{ github.repository_owner }}
+          LAST_OK: ${{ steps.last.outcome == 'success' }}
+
       - uses: crazy-max/ghaction-github-pages@v4
         with:
           target_branch: output
@@ -84,7 +110,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - if: steps.frame.outcome != 'success' || steps.graph.outcome != 'success'   # failed, timed out or cancelled: say so
+      - if: steps.frame.outcome != 'success' || steps.graph.outcome != 'success' || steps.activity.outcome != 'success'   # failed, timed out or cancelled: say so
         run: |
-          echo "::error::The snake or the graph didn't come out right (frame: ${{ steps.frame.outcome }}, graph: ${{ steps.graph.outcome }}); see those steps above for why."
+          echo "::error::The snake, the graph or the activity pictures didn't come out right (frame: ${{ steps.frame.outcome }}, graph: ${{ steps.graph.outcome }}, activity: ${{ steps.activity.outcome }}); see those steps above for why."
           exit 1
