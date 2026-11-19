@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/hello.svg" width="92%" alt="A code window called chanelle.json: name Chanelle Bingham; role self-taught developer; based in Australia; studying at the University of Tasmania; on GitHub since July 2026; building everember.ai, private AI companions; focus accessibility and docs; merged into Hugo, Mozilla, Home Assistant, JupyterLab, MUI X, Quarto, sphinx-autoapi and Western Friend; vibe Barbie Y2K.">
+  <img src="assets/hello.svg" width="92%" alt="A code window called chanelle.json: name Chanelle Bingham; role self-taught developer; based in Australia; studying at the University of Tasmania; on GitHub since July 2026; building everember.ai, private AI companions; focus accessibility and docs; merged into Hugo, Mozilla, Home Assistant, JupyterLab, MUI X, Quarto, sphinx-autoapi, Western Friend, Carbon, VS Code docs and Read the Docs; vibe Barbie Y2K.">
 </p>
 
 <p align="center">
@@ -17,17 +17,20 @@
 <h3 align="center"><img src="assets/sections/title-merged-into.svg" width="26%" alt="Merged into"></h3>
 
 <p align="center">
-  <a href="https://github.com/gohugoio/hugo/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/hugo.svg" width="230" alt="Hugo: my merged pull requests (90,350 stars)"></a>
-  <a href="https://github.com/jupyterlab/jupyterlab/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/jupyterlab.svg" width="230" alt="JupyterLab: my merged pull requests (15,387 stars)"></a>
-  <a href="https://github.com/quarto-dev/quarto-cli/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/quarto.svg" width="230" alt="Quarto: my merged pull requests (6,153 stars)"></a>
-  <a href="https://github.com/mui/mui-x/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/mui-x.svg" width="230" alt="MUI X: my merged pull requests (5,872 stars)"></a>
-  <a href="https://github.com/home-assistant/frontend/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/home-assistant.svg" width="230" alt="Home Assistant: my merged pull requests (5,779 stars)"></a>
-  <a href="https://github.com/mozilla/bedrock/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/mozilla.svg" width="230" alt="Mozilla: my merged pull requests (1,340 stars)"></a>
+  <a href="https://github.com/gohugoio/hugo/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/hugo.svg" width="230" alt="Hugo: my merged pull requests (90,512 stars)"></a>
+  <a href="https://github.com/jupyterlab/jupyterlab/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/jupyterlab.svg" width="230" alt="JupyterLab: my merged pull requests (15,410 stars)"></a>
+  <a href="https://github.com/carbon-design-system/carbon/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/carbon.svg" width="230" alt="Carbon: my merged pull requests (9,630 stars)"></a>
+  <a href="https://github.com/readthedocs/readthedocs.org/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/read-the-docs.svg" width="230" alt="Read the Docs: my merged pull requests (8,412 stars)"></a>
+  <a href="https://github.com/microsoft/vscode-docs/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/vscode-docs.svg" width="230" alt="VS Code docs: my merged pull requests (6,696 stars)"></a>
+  <a href="https://github.com/quarto-dev/quarto-cli/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/quarto.svg" width="230" alt="Quarto: my merged pull requests (6,193 stars)"></a>
+  <a href="https://github.com/mui/mui-x/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/mui-x.svg" width="230" alt="MUI X: my merged pull requests (5,882 stars)"></a>
+  <a href="https://github.com/home-assistant/frontend/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/home-assistant.svg" width="230" alt="Home Assistant: my merged pull requests (5,810 stars)"></a>
+  <a href="https://github.com/search?q=author%3Achanellebingham+is%3Apr+is%3Amerged+org%3Amozilla+org%3Amozmeao&type=pullrequests"><img src="assets/merged/mozilla.svg" width="230" alt="Mozilla: my merged pull requests (1,342 stars)"></a>
   <a href="https://github.com/readthedocs/sphinx-autoapi/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/sphinx-autoapi.svg" width="230" alt="sphinx-autoapi: my merged pull requests (497 stars)"></a>
   <a href="https://github.com/WesternFriend/westernfriend.org/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/western-friend.svg" width="230" alt="Western Friend: my merged pull requests (65 stars)"></a>
 </p>
 
-<p align="center"><img src="assets/sections/merged-note.svg" width="100%" alt="Between them, these projects have over 125,000 stars on GitHub. Most of my open-source work is accessibility: making things usable by people the original build didn’t account for."></p>
+<p align="center"><img src="assets/sections/merged-note.svg" width="100%" alt="Between them, these projects have over 150,000 stars on GitHub. Most of my open-source work is accessibility: making things usable by people the original build didn’t account for."></p>
 
 <h3 align="center"><img src="assets/sections/title-working-on.svg" width="37%" alt="What I’m working on"></h3>
 
@@ -68,4 +71,6 @@
   <a href="https://github.com/search?q=author%3Achanellebingham+org%3Ahome-assistant+is%3Apr&type=pullrequests"><img src="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/orgs/home-assistant.svg" width="200" alt="Home Assistant: how many pull requests I’ve sent there, how many were merged, and my commits, in the last year"></a>
   <a href="https://github.com/search?q=author%3Achanellebingham+org%3Amozilla+org%3Amozmeao+is%3Apr&type=pullrequests"><img src="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/orgs/mozilla.svg" width="200" alt="Mozilla: how many pull requests I’ve sent there, how many were merged, and my commits, in the last year"></a>
   <a href="https://github.com/search?q=author%3Achanellebingham+org%3Areadthedocs+is%3Apr&type=pullrequests"><img src="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/orgs/readthedocs.svg" width="200" alt="Read the Docs: how many pull requests I’ve sent there, how many were merged, and my commits, in the last year"></a>
+  <a href="https://github.com/search?q=author%3Achanellebingham+org%3Acarbon-design-system+is%3Apr&type=pullrequests"><img src="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/orgs/carbon-design-system.svg" width="200" alt="Carbon: how many pull requests I’ve sent there, how many were merged, and my commits, in the last year"></a>
+  <a href="https://github.com/search?q=author%3Achanellebingham+org%3Amicrosoft+is%3Apr&type=pullrequests"><img src="https://raw.githubusercontent.com/chanellebingham/chanellebingham/output/orgs/microsoft.svg" width="200" alt="Microsoft: how many pull requests I’ve sent there, how many were merged, and my commits, in the last year"></a>
 </p>

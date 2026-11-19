@@ -84,7 +84,7 @@ jobs:
       # Like the graph, anything that goes wrong puts the last good pictures back.
       - id: activity
         continue-on-error: true
-        timeout-minutes: 4   # worst case about 3 minutes: 4 pairs of organisation pages, each 20 s, a 3 s wait and a 20 s retry, then the put-back's fetches at once (20 s)
+        timeout-minutes: 5   # worst case about 4 minutes: 5 pairs of organisation pages, each 20 s, a 3 s wait and a 20 s retry, then the put-back's fetches at once (20 s)
         run: node .github/snake/activity.js dist last
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

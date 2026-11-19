@@ -40,6 +40,8 @@ const ORGS = [
   // card (the shape stays mozilla's own page; GitHub has no page for the two together).
   { login: 'mozilla', also: ['mozmeao'], name: 'Mozilla', colour: '#2FA77A' },
   { login: 'readthedocs', name: 'Read the Docs', colour: '#C9961F' },
+  { login: 'carbon-design-system', name: 'Carbon', colour: '#6366F1' },
+  { login: 'microsoft', name: 'Microsoft', colour: '#E5484D' },
 ];
 
 const OVERVIEW = ['light', 'dark'].map((theme) => ({ theme, name: `activity-${theme}.svg` }));
