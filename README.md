@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/hello.svg" width="92%" alt="A code window called chanelle.json: name Chanelle Bingham; role self-taught developer; based in Australia; studying at the University of Tasmania; on GitHub since July 2026; building everember.ai, private AI companions; focus accessibility and docs; merged into Hugo, Mozilla, Home Assistant, JupyterLab, MUI X, Quarto, sphinx-autoapi, Western Friend, Carbon, VS Code docs and Read the Docs; vibe Barbie Y2K.">
+  <img src="assets/hello.svg" width="92%" alt="A code window called chanelle.json: name Chanelle Bingham; role self-taught developer; based in Australia; studying at the University of Tasmania; on GitHub since July 2026; building everember.ai, private AI companions; focus accessibility and docs; merged into Hugo, Mozilla, Home Assistant, JupyterLab, MUI X, Quarto, sphinx-autoapi, Western Friend, Carbon, Microsoft and Read the Docs; vibe Barbie Y2K.">
 </p>
 
 <p align="center">
@@ -21,7 +21,7 @@
   <a href="https://github.com/jupyterlab/jupyterlab/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/jupyterlab.svg" width="230" alt="JupyterLab: my merged pull requests (15,410 stars)"></a>
   <a href="https://github.com/carbon-design-system/carbon/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/carbon.svg" width="230" alt="Carbon: my merged pull requests (9,630 stars)"></a>
   <a href="https://github.com/readthedocs/readthedocs.org/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/read-the-docs.svg" width="230" alt="Read the Docs: my merged pull requests (8,412 stars)"></a>
-  <a href="https://github.com/microsoft/vscode-docs/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/vscode-docs.svg" width="230" alt="VS Code docs: my merged pull requests (6,696 stars)"></a>
+  <a href="https://github.com/microsoft/vscode-docs/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/microsoft.svg" width="230" alt="Microsoft (VS Code docs): my merged pull requests (6,696 stars)"></a>
   <a href="https://github.com/quarto-dev/quarto-cli/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/quarto.svg" width="230" alt="Quarto: my merged pull requests (6,193 stars)"></a>
   <a href="https://github.com/mui/mui-x/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/mui-x.svg" width="230" alt="MUI X: my merged pull requests (5,882 stars)"></a>
   <a href="https://github.com/home-assistant/frontend/pulls?q=is%3Apr+author%3Achanellebingham+is%3Amerged"><img src="assets/merged/home-assistant.svg" width="230" alt="Home Assistant: my merged pull requests (5,810 stars)"></a>
